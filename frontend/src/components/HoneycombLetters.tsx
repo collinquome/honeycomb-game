@@ -24,7 +24,7 @@ export function HoneycombLetters({ letters, centerIndex, onLetterClick }: Honeyc
         />
       </div>
       {/* Middle row */}
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         <HoneyLetter
           letter={letters[(centerIndex + 2) % 7]}
           onClick={onLetterClick}
@@ -40,7 +40,7 @@ export function HoneycombLetters({ letters, centerIndex, onLetterClick }: Honeyc
         />
       </div>
       {/* Bottom row */}
-      <div className="flex gap-2">
+      <div className="flex gap-1">
         <HoneyLetter
           letter={letters[(centerIndex + 4) % 7]}
           onClick={onLetterClick}
@@ -75,17 +75,24 @@ function HoneyLetter({ letter, center, onClick }: { letter: string, center?: boo
       type="button"
       id={`honeycomb-letter-${letter}`}
       className={cn(
-        'rounded-full w-14 h-14 flex items-center justify-center text-2xl font-bold uppercase shadow border transition',
-        center ? 'bg-yellow-400 border-orange-400 text-orange-900 scale-110' : 'bg-orange-100 border-yellow-400 text-yellow-900',
-        'hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-orange-400',
+        // Hexagonal shape using clip-path
+        'w-14 h-14 flex items-center justify-center text-2xl font-bold uppercase shadow border transition relative',
         'sm:w-16 sm:h-16 md:w-20 md:h-20', // Responsive sizing
+        // Hexagon clip-path (creates a perfect hexagon)
+        '[clip-path:polygon(30%_0%,_70%_0%,_100%_50%,_70%_100%,_30%_100%,_0%_50%)]',
+        center ? 'bg-yellow-400 border-orange-400 text-orange-900 scale-110' : 'bg-orange-100 border-yellow-400 text-yellow-900',
+        'hover:scale-105 hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2',
+        // Add some margin to accommodate the hexagon shape
+        'm-1'
       )}
       onClick={() => onClick && onClick(letter)}
       tabIndex={0}
       aria-label={center ? `Center letter ${letter}` : `Letter ${letter}`}
     >
-      {letter}
-      {center && <Hexagon className="ml-1 w-5 h-5 text-orange-400" />}
+      <span className="relative z-10">{letter}</span>
+      {center && (
+        <Hexagon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 text-orange-400 opacity-20" />
+      )}
     </button>
   )
 }
