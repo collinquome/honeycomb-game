@@ -5,14 +5,11 @@ import { ScoreDisplay } from '@/components/ScoreDisplay'
 import { RankFeedback } from '@/components/RankFeedback'
 import { WordList } from '@/components/WordList'
 import { Footer } from '@/components/Footer'
+import { generateValidWords, calculateMaxScore, getPuzzleStats, type PuzzleConfig } from '@/lib/wordGenerator'
 
-const MOCK_PUZZLE = {
+const PUZZLE_CONFIG: PuzzleConfig = {
   letters: ['B', 'E', 'A', 'U', 'T', 'S', 'R'], // Center is 'A'
   centerIndex: 2,
-  words: [
-    'BEAUT', 'BEAUTS', 'BEAR', 'BEARS', 'BARS', 'STAR', 'STARE', 'TEAR', 'TEARS', 'EARS', 'RATE', 'EAT', 'TEA', 'ART', 'SEA', 'SEAT', 'BETA', 'BATS', 'BUST', 'BUSTER', 'BUSTA', 'BUSTS', 'SURE', 'USER', 'RUST', 'RUSTS', 'RUES', 'RATE', 'RATES', 'EAST', 'TEAS', 'SATE', 'SEAR', 'SUET', 'AURA', 'AURAS', 'ARE', 'AREA', 'AREAS', 'ERA', 'ERAS', 'ARTS', 'TUBA', 'TUBAS', 'TUBER', 'TUBERS', 'TUBS', 'TRUE', 'TRUEST', 'AUSTER', 'AURATE', 'AUREATE', 'ASTRA', 'ASTUTE', 'BUREAU', 'BUREAUS', 'BURET', 'BURETS', 'BUSTER', 'BUSTIER', 'BUSTS', 'BUTA', 'BUTE', 'BUTES', 'BUTS', 'BUTTE', 'BUTTER', 'BUTTERS', 'BUTTES', 'BUTT', 'BUTTS', 'RUB', 'RUBS', 'RUBE', 'RUBES', 'RUBS', 'RUST', 'RUSTS',
-  ],
-  maxScore: 100,
 }
 
 const RANKS = [
@@ -31,6 +28,31 @@ export function GamePage() {
   const [score, setScore] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [validWords, setValidWords] = useState<string[]>([])
+  const [maxScore, setMaxScore] = useState(0)
+  const [puzzleStats, setPuzzleStats] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Generate words when component mounts
+  useEffect(() => {
+    setIsLoading(true)
+    try {
+      const words = generateValidWords(PUZZLE_CONFIG)
+      const max = calculateMaxScore(words)
+      const stats = getPuzzleStats(words)
+      
+      setValidWords(words)
+      setMaxScore(max)
+      setPuzzleStats(stats)
+      
+      console.log(`Generated ${words.length} valid words with max score ${max}`)
+      console.log('Puzzle stats:', stats)
+    } catch (error) {
+      console.error('Error generating words:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
 
   // Restore state from localStorage
   useEffect(() => {
@@ -53,10 +75,10 @@ export function GamePage() {
   }, [foundWords, score])
 
   function getRank() {
-    const pct = (score / MOCK_PUZZLE.maxScore) * 100
+    const pct = maxScore > 0 ? (score / maxScore) * 100 : 0
     let rank = RANKS[0].name
     for (let i = RANKS.length - 1; i >= 0; i--) {
-      if (score >= RANKS[i].threshold) {
+      if (pct >= RANKS[i].threshold) {
         rank = RANKS[i].name
         break
       }
@@ -72,11 +94,11 @@ export function GamePage() {
       setError('Words must be at least 4 letters.')
       return
     }
-    if (!word.includes(MOCK_PUZZLE.letters[MOCK_PUZZLE.centerIndex])) {
+    if (!word.includes(PUZZLE_CONFIG.letters[PUZZLE_CONFIG.centerIndex])) {
       setError('Word must include the center letter.')
       return
     }
-    if (!MOCK_PUZZLE.words.includes(word)) {
+    if (!validWords.includes(word)) {
       setError('Not in word list.')
       return
     }
@@ -105,12 +127,21 @@ export function GamePage() {
     }
   }, [error, success])
 
+  if (isLoading) {
+    return (
+      <main className="min-h-[80vh] flex flex-col items-center justify-center bg-yellow-50">
+        <div className="text-orange-900 text-lg">Loading word list...</div>
+        <div className="text-orange-700 text-sm mt-2">Generating {PUZZLE_CONFIG.letters.join('')} puzzle</div>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-[80vh] flex flex-col items-center bg-yellow-50 pb-12">
       <div className="w-full flex flex-col items-center pt-6">
         <HoneycombLetters
-          letters={MOCK_PUZZLE.letters}
-          centerIndex={MOCK_PUZZLE.centerIndex}
+          letters={PUZZLE_CONFIG.letters}
+          centerIndex={PUZZLE_CONFIG.centerIndex}
           onLetterClick={handleLetterClick}
         />
         <WordInput
@@ -120,9 +151,9 @@ export function GamePage() {
           error={error || undefined}
           success={success || undefined}
         />
-        <ScoreDisplay score={score} maxScore={MOCK_PUZZLE.maxScore} />
+        <ScoreDisplay score={score} maxScore={maxScore} />
         <RankFeedback rank={getRank()} />
-        <WordList words={MOCK_PUZZLE.words} foundWords={foundWords} />
+        <WordList words={validWords} foundWords={foundWords} puzzleStats={puzzleStats} />
       </div>
       <Footer />
     </main>
