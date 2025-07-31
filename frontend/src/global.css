@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@700&family=Nunito:wght@400&display=swap');
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background-color: #fffbe6;
+  color: #3b2e18;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 700;
+}
+
+:root {
+  --primary: #fde047; /* yellow-400 */
+  --secondary: #fb923c; /* orange-400 */
+  --brand-brown: #3b2e18;
+  --brand-bg: #fffbe6;
+}
+
+.bg-bee-primary {
+  background-color: var(--primary);
+}
+.bg-bee-secondary {
+  background-color: var(--secondary);
+}
+.text-bee-primary {
+  color: var(--primary);
+}
+.text-bee-secondary {
+  color: var(--secondary);
+}
+.text-brand-brown {
+  color: var(--brand-brown);
+}
+.bg-brand-bg {
+  background-color: var(--brand-bg);
+}

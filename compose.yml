@@ -1,0 +1,6 @@
+
+services:
+    api:
+        build: .  # Uses Dockerfile in app directory
+        ports:
+        - "8000:8000" # Expose port 8000 on local machine, map to 8000 inside docker container (fast API port)
